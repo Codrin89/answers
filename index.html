@@ -1,0 +1,156 @@
+<html lang=en>
+
+	<head>
+		<meta chartset="utf-8">
+		<title>Answers</title>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+		<link rel="stylesheet" href="assets/main.css">
+	</head>
+
+	<body>
+
+		<input class="typeahead" type="text" placeholder="Answers">
+		<a class="link-static pull-right" href="#createanswer">Create New</a>
+		<a class="link-static pull-right" href="#showall">Show all</a>
+		
+		<div class="content">
+
+		</div>
+
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.2.3/backbone-min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.bundle.min.js"></script>
+		<script src="assets/feed.js"></script>
+		<script type="text/javascript">
+
+
+			var HomePageView = Backbone.View.extend({
+				el: '.content',
+				render: function(){
+					this.$el.html('<div class="most-recent col-lg-6 col-sm-6 col-md-6"></div><div class="most-asked col-lg-6 col-sm-6 col-md-6"></div>');
+					var mostSearched = '';
+					var mostAsked = '';
+					responseMostSearched.forEach(function(value){
+						mostSearched += '<h1><a href="' + value.uri + '">' + value.title + '</a></h1><p>' + value.description + '</p>';
+					});
+					responseMostAsked.forEach(function(value){
+						mostAsked += '<h1><a href="' + value.uri + '">' + value.title + '</a></h1><p>' + value.description + '</p>';
+					});
+					$('.most-recent').html(mostSearched);
+					$('.most-asked').html(mostAsked);
+				}
+			});
+
+			var SingleAnswer = Backbone.View.extend({
+				el: '.content',
+				render: function(data){
+					var that = this;
+					singleData.forEach(function(value){
+						var uri = value.uri.split('/');
+						if(uri[1] == data){
+							var tempComments = '';
+							value.comments.forEach(function(value){
+								tempComments += '<div class="comment-block"><p>'+ value.text + '</p><span class="pull-right">'+ value.createdBy + '</span><span class="pull-right">' + value.createdAt + '</span></div>';
+							});
+							that.$el.html('<h1 class="main-title">' + value.title + '</h1><h4 class="pull-right">' + value.createdAt + '</h4><h4 class="pull-right">' + value.createdBy + '</h4>'+'<div class="answer-content">' + value.content + '</div>' +'<section class="comments"><h3>Comments</h3><p>' + tempComments + '</section>');
+						}
+					});
+				}
+			});
+
+			var ShowAllAnswer = Backbone.View.extend({
+				el: '.content',
+				render: function(){
+					var tempHtml = '';
+					singleData.forEach(function(value){
+						tempHtml += '<h1><a href="' + value.uri + '">' + value.title + '</a></h1><p>' + value.content + '</p>';
+					});
+					this.$el.html(tempHtml);
+				}
+			});
+			
+
+
+			var Router = Backbone.Router.extend({
+				routes: {
+					'': 'home',
+					'answer/:id': 'getPost',
+					'showall': 'showAll',
+					'create': 'createNew'
+				}
+			});
+			var showAllAnswer = new ShowAllAnswer();
+			var homepageView = new HomePageView();
+			var singleAnswer = new SingleAnswer();
+			var router = new Router();
+
+			router.on('route:getPost',function(data){
+				singleAnswer.render(data);
+			});
+
+			router.on('route:showAll',function(data){
+				showAllAnswer.render();
+			});
+
+			router.on('route:home',function(){
+				homepageView.render();
+			});
+
+			Backbone.history.start();
+		</script>
+
+		<script type="text/javascript">
+			var substringMatcher = function(strs) {
+			return function findMatches(q, cb) {
+			var matches, substringRegex;
+
+			// an array that will be populated with substring matches
+			matches = [];
+
+			// regex used to determine if a string contains the substring `q`
+			substrRegex = new RegExp(q, 'i');
+
+			// iterate through the pool of strings and for any string that
+			// contains the substring `q`, add it to the `matches` array
+			$.each(strs, function(i, str) {
+			if (substrRegex.test(str)) {
+				matches.push(str);
+			}
+			});
+
+			cb(matches);
+			};
+			};
+
+			var answers = [];
+			allData.forEach(function(value){
+				var tempHtml = value.uri + '/' + value.title + '/' + value.description;
+				answers.push(tempHtml);
+			});
+
+			$('.typeahead').typeahead({highlight:true},
+			{
+				display: 'value',
+				name: 'answers',
+				source: substringMatcher(answers),
+				templates: {
+				    empty: [
+				      '<div class="empty-message">',
+				        'unable to find any Answers that match the current query',
+				      '</div>'
+				    ].join('\n'),
+				    suggestion: function(data) {
+				    	var splitData = data.split('/');
+				    	var uri = splitData[0] +'/'+ splitData[1];
+				    	var title = splitData[2];
+				    	var description = splitData[3];
+					    return '<div><a href="' + uri + '">' + title + '</a><p>' + description + '</p></div>';
+					}
+			  	}
+			});
+		</script>
+	</body>
+
+</html>

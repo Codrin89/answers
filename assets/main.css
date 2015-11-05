@@ -1,0 +1,31 @@
+.twitter-typeahead{
+	width:98%;
+	margin:1%;
+}
+.tt-input{
+	width:100%;
+}
+.tt-hint{
+	background-color:white;
+	opacity:1;
+}
+.tt-menu{
+	background:white;
+	width:100%;
+	padding:2%;
+	border:1px solid #efefef;
+}
+.link-static, .content h4{
+	padding-right:2%;
+}
+.answer-content, .comments{
+  	clear:both;
+  	padding: 5%;
+}
+.main-title{
+	text-align:center;
+}
+.comment-block{
+	border:1px solid #efefef;
+	padding:4%;
+}
